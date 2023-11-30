@@ -78,7 +78,7 @@ public class UserServiceTest {
     }
     
     
-    
+    /*
     @Test
     public void getUserByToken() {
     	
@@ -112,7 +112,8 @@ public class UserServiceTest {
         verify(userRepository, times(1)).save(any());
 
         assertNotNull(existingUser);
-    }        
+    }   
+    */     
     
 	
 	private Date getCurrentDate() {

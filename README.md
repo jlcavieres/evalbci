@@ -1,6 +1,8 @@
 # evalbci
 
 
+# Uso de la API
+
 API REST con 2 métodos disponibles:
 
 <b>Sign UP</b>
@@ -39,6 +41,13 @@ Authorization:Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb3NlLmNhdmllcmVzM0BnbWFpbC
 
 Se trata de un token JWT que se ha generado en la operación Sign UP, la imagen a continuación indica como utilizarlo en el software Postman
 ![login-token](https://github.com/jlcavieres/evalbci/assets/28793178/fdae17d9-816e-4929-8758-17366de15f94)
+
+
+
+
+# Construcción
+El proyecto está implementado con Maven para ejecutarlo basta ejecutar (no incluir comillas) "mvn spring-boot:run"
+
 
 
 
