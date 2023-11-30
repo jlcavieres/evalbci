@@ -32,6 +32,7 @@ Login
 GET http://localhost:8080/api/users/login
 
 No requiere parametros de entrada más allá de un Token que se debe declarar como Header Authorization, en modo RAW luce como sigue (no incluir comillas): 
+<br/>
 Authorization:Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb3NlLmNhdmllcmVzM0BnbWFpbC5jb20iLCJpYXQiOjE3MDEzMDk1ODQsImV4cCI6MTcwMTM5NTk4NH0.1-jw3UQV8vcbjJ9NpLyWFl4KTgYenc9hkhFaPAom5gQ
 
 <br/>
