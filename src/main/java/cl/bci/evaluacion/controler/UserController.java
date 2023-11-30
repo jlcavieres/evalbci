@@ -64,7 +64,7 @@ public class UserController {
 
 			// Manejo de errores de lógica lanzados desde el service
 
-			logger.info("-- Cayo en el catch de SignUp UserAlreadyExistsException");
+			logger.error("-- Cayo en el catch de SignUp UserAlreadyExistsException");
 
 			HttpStatus hs = HttpStatus.CONFLICT;
 			formatedErrors
@@ -99,7 +99,7 @@ public class UserController {
 		List<ErrorResponseDTO> formatedErrors = new ArrayList<ErrorResponseDTO>();
 
 		try {
-			
+
 			// Check if the Authorization header is present and starts with "Bearer "
 			if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
 				throw new InvalidTokenException();
@@ -107,9 +107,7 @@ public class UserController {
 
 			// Extract the token (remove "Bearer " prefix)
 			String token = authorizationHeader.substring(7);
-			logger.info("-- Token enviado = {} ", token);
-
-
+			logger.debug("-- Token enviado = {} ", token);
 
 			response = userService.getUserByToken(token);
 
@@ -138,7 +136,7 @@ public class UserController {
 
 		} catch (Exception e) {
 
-			logger.info("-- Cayo en el catch de Login excepción no controlada");
+			logger.error("-- Cayo en el catch de Login excepción no controlada");
 
 			// Manejo de posible excepción no controlada
 			HttpStatus hs = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -149,7 +147,6 @@ public class UserController {
 			return new ResponseEntity<>(errores, hs);
 		}
 	}
-
 
 	private ErroresResponseDTO convertErrorToDTO(List<FieldError> springErrores) {
 
@@ -165,7 +162,6 @@ public class UserController {
 			Timestamp timestamp = new Timestamp(currentTimeMillis);
 
 			ErrorResponseDTO fError = new ErrorResponseDTO();
-
 
 			fError.setCodigo(HttpStatus.BAD_REQUEST.value());
 			fError.setDetail(springError.getDefaultMessage());
@@ -183,7 +179,7 @@ public class UserController {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
 
-		logger.info("-- Cayó en el exception handler");
+		logger.error("-- Cayó en el exception handler para validaciones");
 
 		BindingResult result = ex.getBindingResult();
 

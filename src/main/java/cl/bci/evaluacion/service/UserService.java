@@ -33,9 +33,6 @@ public class UserService {
 
 	public UserEntity createUser(SignUpRequestDTO userDTO) {
 
-		// TODO incluir validaciones sintacticas
-		validateUser(userDTO);
-		
 		// Validación de lógica de negocio
 		boolean exist = userRepository.existsByEmail(userDTO.getEmail());
 
@@ -97,20 +94,14 @@ public class UserService {
 		// token yen base a eso busco el dato del usuario por email
 		String email = jwtUtils.extractSubject(token);
 
-		logger.info("-- Email extraido del subject del token {} ", email);
+		logger.debug("-- Email extraido del subject del token {} ", email);
 
-		UserEntity userEntity = userRepository.findByEmail(email);
-
-		// logger.info("-- hay {}  entidades encontradas por el email ", entidades.size());
-
-		// UserEntity userEntity = entidades.get(0);
+		UserEntity userEntity = userRepository.findByEmail(email); 
 
 		if (userEntity == null) { 
 			throw new UserNotFoundException();
-		}		
-			
-			
-		logger.info("-- se encontró por el email ");
+		}
+		
 
 		// Acorde a lo solicitado, se genera y asigna un nuevo token al usuario
 
@@ -134,34 +125,10 @@ public class UserService {
 		return currentDate;		
 	}
 
-	/*
-	 * private void validateUser(UserDTO userDTO) { // Implement validation logic
-	 * here, throw exceptions if validation fails // You can use
-	 * javax.validation.constraints annotations on UserDTO fields for basic
-	 * validations // Implement additional custom validations as needed }
-	 * 
-	 * private UserEntity convertToEntity(UserDTO userDTO) { // Implement conversion
-	 * logic here // Use ModelMapper or manually map fields // Convert PhoneDTO list
-	 * to PhoneEntity list if needed }
-	 */
-
 	private String encodePassword(String password) {
 		// Use a password encoder to securely encode the password
 		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 		return encoder.encode(password);
 	}
-
-	private boolean isPasswordValid(String rawPassword, String encodedPassword) {
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		return encoder.matches(rawPassword, encodedPassword);
-	}
-
-	private void validateUser(SignUpRequestDTO userDTO) {
-		// Validation logic for user fields
-	}
-
-	/*
-	 * private UserEntity convertToEntity(UserDTO userDTO) { // Conversion logic
-	 * from DTO to Entity }
-	 */
+	
 }
