@@ -3,7 +3,7 @@
 
 API REST con 2 métodos disponibles:
 
-Sign UP
+<b>Sign UP</b>
 POST http://localhost:8080/api/users/sign-up
 
 Ejemplo de JSON de entrada
@@ -28,7 +28,7 @@ Ejemplo de JSON de entrada
 
 <br/>
 
-Login
+<b>Login</b>
 GET http://localhost:8080/api/users/login
 
 No requiere parametros de entrada más allá de un Token que se debe declarar como Header Authorization, en modo RAW luce como sigue (no incluir comillas): 
@@ -41,23 +41,7 @@ Se trata de un token JWT que se ha generado en la operación Sign UP, la imagen 
 ![login-token](https://github.com/jlcavieres/evalbci/assets/28793178/fdae17d9-816e-4929-8758-17366de15f94)
 
 
-{
-   "name":"jose cavieres 3",
-   "email":"jose.cavieres3@",
-   "password":"Testbci23",
-   "phones":[
-      {
-         "number":"11111122222",
-         "citycode":46,
-         "countrycode":"ccode03"
-      },
-	  {
-         "number":"2222223333",
-         "citycode":46,
-         "countrycode":"ccode03"
-      }
-   ]
-}
+
 
 
 
