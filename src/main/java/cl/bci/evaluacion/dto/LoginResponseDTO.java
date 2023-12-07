@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 public class LoginResponseDTO {
+	
     private String id;
     private Date created;
     private Date lastLogin;

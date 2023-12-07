@@ -1,4 +1,4 @@
-package cl.bci.evaluacion.service;
+package cl.bci.evaluacion.service.impl;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -19,11 +19,12 @@ import cl.bci.evaluacion.exception.UserAlreadyExistsException;
 import cl.bci.evaluacion.exception.UserNotFoundException;
 import cl.bci.evaluacion.repository.UserRepository;
 import cl.bci.evaluacion.security.JwtUtils;
+import cl.evaluacion.service.UserService;
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService {
 
-	private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 	@Autowired
 	private UserRepository userRepository;
@@ -31,12 +32,13 @@ public class UserService {
 	@Autowired
 	private JwtUtils jwtUtils;
 
+	@Override
 	public UserEntity createUser(SignUpRequestDTO userDTO) {
 
 		// Validación de lógica de negocio
 		boolean exist = userRepository.existsByEmail(userDTO.getEmail());
 
-		logger.info("-- Existe pregunto por {} y respondio = {} ", userDTO.getEmail(), exist);
+		logger.info("El email existe pregunto por {} y respondio = {} ", userDTO.getEmail(), exist);
 
 		// Check if the user already exists
 		if (exist) {
@@ -87,6 +89,7 @@ public class UserService {
 	 * 
 	 * @param token puro, sin prefijos
 	 */
+	@Override
 	public UserEntity getUserByToken(String token) {
 
 

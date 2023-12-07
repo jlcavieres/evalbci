@@ -12,7 +12,7 @@ Ejemplo de JSON de entrada
 
 {
    "name":"jose cavieres 3",
-   "email":"jose.cavieres3@",
+   "email":"jose.cavieres3@gmail.com",
    "password":"Testbci23",
    "phones":[
       {
@@ -39,14 +39,20 @@ Authorization:Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb3NlLmNhdmllcmVzM0BnbWFpbC
 
 <br/>
 
-Se trata de un token JWT que se ha generado en la operación Sign UP, la imagen a continuación indica como utilizarlo en el software Postman
+Se trata de un token JWT que se ha generado en la operación Sign UP (es requerido llamarla previa a ejecutar /login), la imagen a continuación indica como utilizarlo en el software Postman
 ![login-token](https://github.com/jlcavieres/evalbci/assets/28793178/fdae17d9-816e-4929-8758-17366de15f94)
 
 
 
 
 # Construcción
-El proyecto está implementado con Maven para ejecutarlo basta ejecutar (no incluir comillas) "mvn spring-boot:run"
+El proyecto está implementado con Maven 3.9.x, para ejecutar los comandos a continuación es necesario estar posicionado en la carpeta del proyecto donde está el archivo <i>pom.xml</i>
+
+Para correr los test de manera aislada, ejecutar <i>mvn clean test</i> el resultado deberá ser como la imagen a continuación
+
+TIP: Si es requerido obtener un informe de cobertura de código, ejecutar <i>mvn clean verify</i>, el informe quedará disponible en \target\site\jacoco\index.html
+
+Para correr la aplicación ejecutar <i>mvn spring-boot:run"</i>, se recomienda probarla con un software como Postman
 
 
 

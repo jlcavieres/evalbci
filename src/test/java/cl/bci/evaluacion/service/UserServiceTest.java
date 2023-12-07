@@ -4,14 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Collections;
 import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,12 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import cl.bci.evaluacion.dto.PhoneDTO;
 import cl.bci.evaluacion.dto.SignUpRequestDTO;
 import cl.bci.evaluacion.entity.UserEntity;
 import cl.bci.evaluacion.exception.UserAlreadyExistsException;
 import cl.bci.evaluacion.repository.UserRepository;
 import cl.bci.evaluacion.security.JwtUtils;
+import cl.bci.evaluacion.service.impl.UserServiceImpl;
+import cl.evaluacion.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -47,7 +46,7 @@ public class UserServiceTest {
     
     
     @InjectMocks
-    private UserService userService;
+    private UserServiceImpl userService;
 
     
     

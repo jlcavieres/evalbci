@@ -24,15 +24,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import cl.bci.evaluacion.dto.ErrorResponseDTO;
 import cl.bci.evaluacion.dto.ErroresResponseDTO;
+import cl.bci.evaluacion.dto.LoginResponseDTO;
+import cl.bci.evaluacion.dto.PhoneDTO;
 import cl.bci.evaluacion.dto.SignUpRequestDTO;
 import cl.bci.evaluacion.dto.SignUpResponseDTO;
+import cl.bci.evaluacion.entity.PhoneEntity;
 import cl.bci.evaluacion.entity.UserEntity;
 import cl.bci.evaluacion.exception.InvalidTokenException;
 import cl.bci.evaluacion.exception.UserAlreadyExistsException;
 import cl.bci.evaluacion.exception.UserNotFoundException;
-import cl.bci.evaluacion.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
+import cl.evaluacion.service.UserService;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -58,13 +62,13 @@ public class UserController {
 		try {
 
 			UserEntity createdUser = userService.createUser(userDTO);
-			return new ResponseEntity<>(this.signUpResponseMapper(createdUser), HttpStatus.CREATED);
+			return new ResponseEntity<>(this.mapSignUpResponse(createdUser), HttpStatus.CREATED);
 
 		} catch (UserAlreadyExistsException e) {
 
 			// Manejo de errores de lógica lanzados desde el service
 
-			logger.error("-- Cayo en el catch de SignUp UserAlreadyExistsException");
+			logger.error("Cayo en el catch de SignUp UserAlreadyExistsException");
 
 			HttpStatus hs = HttpStatus.CONFLICT;
 			formatedErrors
@@ -107,15 +111,15 @@ public class UserController {
 
 			// Extract the token (remove "Bearer " prefix)
 			String token = authorizationHeader.substring(7);
-			logger.debug("-- Token enviado = {} ", token);
+			logger.debug("Token enviado = {} ", token);
 
 			response = userService.getUserByToken(token);
 
-			return new ResponseEntity<>(response, HttpStatus.OK);
+			return new ResponseEntity<>(this.mapLoginResponse(response), HttpStatus.OK);
 
 		} catch (UserNotFoundException e) {
 
-			logger.info("-- Cayo en el catch de Login UserNotFoundException");
+			logger.info("Catch de Login UserNotFoundException");
 
 			HttpStatus hs = HttpStatus.NOT_FOUND;
 			formatedErrors
@@ -125,7 +129,7 @@ public class UserController {
 			return new ResponseEntity<>(errores, hs);
 		} catch (InvalidTokenException e) {
 
-			logger.info("-- Cayo en el catch de Login InvalidTokenException");
+			logger.info("Catch de Login InvalidTokenException");
 
 			HttpStatus hs = HttpStatus.NOT_FOUND;
 			formatedErrors
@@ -136,7 +140,7 @@ public class UserController {
 
 		} catch (Exception e) {
 
-			logger.error("-- Cayo en el catch de Login excepción no controlada");
+			logger.error("Cayó en el catch de Login excepción no controlada");
 
 			// Manejo de posible excepción no controlada
 			HttpStatus hs = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -189,7 +193,7 @@ public class UserController {
 		return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
 	}
 
-	private SignUpResponseDTO signUpResponseMapper(UserEntity entity) {
+	private SignUpResponseDTO mapSignUpResponse(UserEntity entity) {
 
 		SignUpResponseDTO response = new SignUpResponseDTO();
 
@@ -200,6 +204,38 @@ public class UserController {
 		response.setLastLogin(entity.getLastLogin());
 
 		return response;
+	}
+	
+	
+	private LoginResponseDTO mapLoginResponse(UserEntity entity) {
+
+		LoginResponseDTO response = new LoginResponseDTO();
+
+		response.setId(entity.getId().toString());
+		response.setCreated(entity.getCreated());
+		response.setToken(entity.getToken());
+		response.setActive(entity.isActive());
+		response.setName(entity.getName());
+		response.setEmail(entity.getName());
+		response.setPassword(entity.getPassword());
+		response.setLastLogin(entity.getLastLogin());
+		response.setPhones(this.mapPhoneResponse(entity.getPhones()));
+
+		return response;
+	}
+	
+	
+	private List<PhoneDTO> mapPhoneResponse(List<PhoneEntity> sourceDTO) {
+		
+		List<PhoneDTO> destinationList = new ArrayList<>();
+
+		if (sourceDTO != null && !sourceDTO.isEmpty()) {			
+
+			// El uso de lambda expression está disponible a partir de la versión 8 de Java
+			sourceDTO.forEach(phone -> destinationList.add(new PhoneDTO(phone.getNumber(), phone.getCitycode(), phone.getCountrycode())));
+		}
+		
+		return destinationList;		
 	}
 
 }
