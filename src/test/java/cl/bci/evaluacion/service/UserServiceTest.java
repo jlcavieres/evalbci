@@ -10,8 +10,11 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,16 +26,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import cl.bci.evaluacion.dto.PhoneDTO;
 import cl.bci.evaluacion.dto.SignUpRequestDTO;
 import cl.bci.evaluacion.entity.UserEntity;
 import cl.bci.evaluacion.exception.UserAlreadyExistsException;
+import cl.bci.evaluacion.exception.UserNotFoundException;
 import cl.bci.evaluacion.repository.UserRepository;
 import cl.bci.evaluacion.security.JwtUtils;
 import cl.bci.evaluacion.service.impl.UserServiceImpl;
+import cl.bci.evaluacion.util.CommonUtils;
 import cl.evaluacion.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
 	
 	
 	private static final Logger logger = LoggerFactory.getLogger(UserServiceTest.class);
@@ -41,6 +47,7 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepositoryMock;
     
+    
     @Mock
     private JwtUtils jwtUtilsMock;
     
@@ -48,8 +55,7 @@ public class UserServiceTest {
     @InjectMocks
     private UserServiceImpl userService;
 
-    
-    
+       
     
     @BeforeEach
     void setUp() {
@@ -68,7 +74,7 @@ public class UserServiceTest {
         savedUser.setActive(true);
         savedUser.setName("John Doe");
         savedUser.setEmail("john@example.com");
-        savedUser.setPassword(this.encodePassword("Testbci23"));
+        savedUser.setPassword(CommonUtils.encodePassword("Testbci23"));
         
         when(userRepositoryMock.save(any())).thenReturn(savedUser);
 
@@ -108,11 +114,10 @@ public class UserServiceTest {
 
         when(userRepositoryMock.existsByEmail(userDTO.getEmail())).thenReturn(true);
 
-        // Act and Assert
+        // Se asegura que la excepción se ha lanzado
         assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(userDTO));
 
         verify(userRepositoryMock, times(1)).existsByEmail(userDTO.getEmail());
-        // verify(jwtUtilsMock, times(0)).generateToken(anyString());
         
         // No llama al save dado que la excepción no le permitió crear
         verify(userRepositoryMock, times(0)).save(any(UserEntity.class));
@@ -121,10 +126,12 @@ public class UserServiceTest {
     
     
     @Test
-    void getUserByToken() {
+    void testGetUserByToken() {
     	
         // Mocking the UserRepository
     	String existingEmail = "jose.cavieres2@gmail.com";
+    	
+    	String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb3NlLmNhdmllcmVzMkBnbWFpbC5jb20iLCJpYXQiOjE3MDEyOTIyODgsImV4cCI6MTcwMTM3ODY4OH0.5IB6aep4moVQZodHOYlFI75_LNWjP1FmXTovK-7o3M";
     	
     	// Usuario existente
         UserEntity existingUser = new UserEntity(); // Create a sample saved user
@@ -132,7 +139,7 @@ public class UserServiceTest {
         existingUser.setActive(true);
         existingUser.setName("John Doe");
         existingUser.setEmail(existingEmail);
-        existingUser.setPassword(this.encodePassword("Testbci23"));
+        existingUser.setPassword(CommonUtils.encodePassword("Testbci23"));
                 
         // responder con el mock
         when(userRepositoryMock.findByEmail(any())).thenReturn(existingUser);
@@ -140,8 +147,6 @@ public class UserServiceTest {
         // responde el mock con el mismo usuario
         when(userRepositoryMock.save(any())).thenReturn(existingUser);
         
-        
-        String token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb3NlLmNhdmllcmVzMkBnbWFpbC5jb20iLCJpYXQiOjE3MDEyOTIyODgsImV4cCI6MTcwMTM3ODY4OH0.5IB6aep4moVQZodHOYlFI75_LNWjP1FmXTovK-7o3M";
 
         // Calling the createUser method
         
@@ -157,25 +162,52 @@ public class UserServiceTest {
         
         // El correo corresponde
         assertEquals(existingEmail, usuarioObtenido.getEmail());
-    }   
-         
+    }
     
-	
-	private Date getCurrentDate() {
-		
-		// Get the current date and time
-		LocalDateTime currentDateTime = LocalDateTime.now();
+    
+    @Test
+    void testGetUserByToken_UserNotFoundException() {
+    	
+    	 // Arrange
+        String nonExistingToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb3NlLmNhdmllcmVzMkBnbWFpbC5jb20iLCJpYXQiOjE3MDEyOTIyODgsImV4cCI6MTcwMTM3ODY4OH0.5IB6aep4moVQZodHOYlFI75_LNWjP1FmXTovK-7o3M";
+        String email = "nonexistinguser@example.com";
 
-		// Convert LocalDateTime to Date
-		Date currentDate = Date.from(currentDateTime.atZone(ZoneId.systemDefault()).toInstant());
-		
-		return currentDate;		
-	}
+        
+        when(jwtUtilsMock.extractSubject(nonExistingToken)).thenReturn(email);
+        when(userRepositoryMock.findByEmail(email)).thenReturn(null);
+        
+        // Se asegura que la excepción se ha lanzado
+        assertThrows(UserNotFoundException.class, () -> userService.getUserByToken(nonExistingToken));    
+    }
+    
+    
+    
+    @Test
+    void testConvertRequestToUserEntity() {
+    	
+        SignUpRequestDTO signUpRequestDTO = new SignUpRequestDTO();
+        signUpRequestDTO.setName("John");
+        signUpRequestDTO.setEmail("john@example.com");
+        signUpRequestDTO.setPassword("Tcc21aa$");
+        signUpRequestDTO.setPhones(Arrays.asList(new PhoneDTO(123456789, 1, "US"), new PhoneDTO(987654321, 2, "CA"), new PhoneDTO(555555555, 3, "UK")));
+        
+
+        // Act
+        UserEntity result = userService.convertRequestToUserEntity(signUpRequestDTO);
+
+        // Assert
+        assertEquals("John", result.getName());
+        assertEquals("john@example.com", result.getEmail());
+        
+        // Assert contiene la misma cantidad de teléfonos solicitados para crear        
+        assertListSize(result.getPhones(), 3); 
+ 
+    }
     
 
-	private String encodePassword(String password) {
-		// Use a password encoder to securely encode the password
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		return encoder.encode(password);
-	}
+    public static void assertListSize(List<?> list, int expectedSize) {
+        Assertions.assertEquals(expectedSize, list.size());
+    }
+
+
 }

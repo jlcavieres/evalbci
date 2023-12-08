@@ -33,6 +33,7 @@ import cl.bci.evaluacion.entity.UserEntity;
 import cl.bci.evaluacion.exception.InvalidTokenException;
 import cl.bci.evaluacion.exception.UserAlreadyExistsException;
 import cl.bci.evaluacion.exception.UserNotFoundException;
+import cl.bci.evaluacion.util.CommonUtils;
 import cl.evaluacion.service.UserService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -236,6 +237,31 @@ public class UserController {
 		}
 		
 		return destinationList;		
+	}
+	
+	
+	
+	private UserEntity convertRequestToUserEntity(SignUpRequestDTO sourceDTO) {
+		
+		// Convert DTO to Entity and save to database
+		UserEntity userEntity = new UserEntity();
+
+		userEntity.setName(sourceDTO.getName());
+		userEntity.setEmail(sourceDTO.getEmail());
+		userEntity.setPassword(CommonUtils.encodePassword(sourceDTO.getPassword()));
+
+		if (sourceDTO.getPhones() != null && !sourceDTO.getPhones().isEmpty()) {
+
+			List<PhoneEntity> destinationList = new ArrayList<>();
+
+			// El uso de lambda expression está disponible a partir de la versión 8 de Java
+			sourceDTO.getPhones().forEach(phone -> destinationList
+					.add(new PhoneEntity(phone.getNumber(), phone.getCitycode(), phone.getCountrycode())));
+
+			userEntity.setPhones(destinationList);
+		}
+		
+		return userEntity;		
 	}
 
 }

@@ -19,6 +19,7 @@ import cl.bci.evaluacion.exception.UserAlreadyExistsException;
 import cl.bci.evaluacion.exception.UserNotFoundException;
 import cl.bci.evaluacion.repository.UserRepository;
 import cl.bci.evaluacion.security.JwtUtils;
+import cl.bci.evaluacion.util.CommonUtils;
 import cl.evaluacion.service.UserService;
 
 @Service
@@ -28,9 +29,11 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;
-
+	
+	
 	@Autowired
-	private JwtUtils jwtUtils;
+	private JwtUtils jwtUtils; // No es una clase estática para facilitar su uso en los Unit Test
+	
 
 	@Override
 	public UserEntity createUser(SignUpRequestDTO userDTO) {
@@ -51,7 +54,7 @@ public class UserServiceImpl implements UserService {
 		UserEntity userEntity = this.convertRequestToUserEntity(userDTO);
 		
 		// Los que estan fuera de la DTO del request
-		userEntity.setCreated(this.getCurrentDate());
+		userEntity.setCreated(CommonUtils.getCurrentDate());
 		// userEntity.setLastLogin(null); // remover si por defecto lo deja en null al crear
 		userEntity.setActive(true);
 		userEntity.setToken(token);
@@ -60,15 +63,48 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	
+	/**
+	 * 
+	 * @param token puro, sin prefijos
+	 */
+	@Override
+	public UserEntity getUserByToken(String token) {
+
+
+		// Con proposito demostrativo, no uso el token como llave, extraigo el sub (email) del
+		// token yen base a eso busco el dato del usuario por email
+		String email = jwtUtils.extractSubject(token);
+
+		logger.info("Email extraido del subject del token {} ", email);
+
+		UserEntity userEntity = userRepository.findByEmail(email); 
+
+		if (userEntity == null) { 
+			logger.info("Usuario no encontrado por email extraido del token {} ", email);
+			throw new UserNotFoundException();
+		}
+		
+
+		// Acorde a lo solicitado, se genera y asigna un nuevo token al usuario
+
+		String newToken = jwtUtils.generateToken(email);
+		userEntity.setToken(newToken);
+		userEntity.setLastLogin(CommonUtils.getCurrentDate());
+
+		return userRepository.save(userEntity);
+	}
+
 	
-	private UserEntity convertRequestToUserEntity(SignUpRequestDTO sourceDTO) {
+	
+	
+	public UserEntity convertRequestToUserEntity(SignUpRequestDTO sourceDTO) {
 		
 		// Convert DTO to Entity and save to database
 		UserEntity userEntity = new UserEntity();
 
 		userEntity.setName(sourceDTO.getName());
 		userEntity.setEmail(sourceDTO.getEmail());
-		userEntity.setPassword(this.encodePassword(sourceDTO.getPassword()));
+		userEntity.setPassword(CommonUtils.encodePassword(sourceDTO.getPassword()));
 
 		if (sourceDTO.getPhones() != null && !sourceDTO.getPhones().isEmpty()) {
 
@@ -82,56 +118,6 @@ public class UserServiceImpl implements UserService {
 		}
 		
 		return userEntity;		
-	}
-	 
-
-	/**
-	 * 
-	 * @param token puro, sin prefijos
-	 */
-	@Override
-	public UserEntity getUserByToken(String token) {
-
-
-		// Con proposito demostrativo, no uso el token como llave, extraigo el sub (email) del
-		// token yen base a eso busco el dato del usuario por email
-		String email = jwtUtils.extractSubject(token);
-
-		logger.debug("-- Email extraido del subject del token {} ", email);
-
-		UserEntity userEntity = userRepository.findByEmail(email); 
-
-		if (userEntity == null) { 
-			throw new UserNotFoundException();
-		}
-		
-
-		// Acorde a lo solicitado, se genera y asigna un nuevo token al usuario
-
-		String newToken = jwtUtils.generateToken(email);
-		userEntity.setToken(newToken);
-		userEntity.setLastLogin(this.getCurrentDate());
-
-		return userRepository.save(userEntity);
-	}
-	
-	
-	
-	private Date getCurrentDate() {
-		
-		// Get the current date and time
-		LocalDateTime currentDateTime = LocalDateTime.now();
-
-		// Convert LocalDateTime to Date
-		Date currentDate = Date.from(currentDateTime.atZone(ZoneId.systemDefault()).toInstant());
-		
-		return currentDate;		
-	}
-
-	private String encodePassword(String password) {
-		// Use a password encoder to securely encode the password
-		BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-		return encoder.encode(password);
 	}
 	
 }
